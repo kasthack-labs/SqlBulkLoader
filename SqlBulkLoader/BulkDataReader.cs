@@ -16,7 +16,7 @@ public sealed class BulkDataReader<T> : IDataReader
 
     public int RecordsAffected => -1;
 
-    public object this[int i] => throw new NotSupportedException();
+    public object this[int i] => GetValue(i);
 
     public object this[string name] => throw new NotSupportedException();
 
@@ -43,7 +43,15 @@ public sealed class BulkDataReader<T> : IDataReader
 
     public object GetValue(int i) => accessors[i](source.Current!)!;
 
-    public int GetValues(object[] values) => throw new NotSupportedException();
+    public int GetValues(object[] values)
+    {
+        for (var i = 0; i < accessors.Length; i++)
+        {
+            values[i] = GetValue(i);
+        }
+
+        return accessors.Length;
+    }
 
     public IDataReader GetData(int i) => throw new NotSupportedException();
 
@@ -57,31 +65,31 @@ public sealed class BulkDataReader<T> : IDataReader
 
     public int GetOrdinal(string name) => throw new NotSupportedException();
 
-    public bool GetBoolean(int i) => throw new NotSupportedException();
+    public bool GetBoolean(int i) => (bool)GetValue(i);
 
-    public byte GetByte(int i) => throw new NotSupportedException();
+    public byte GetByte(int i) => (byte)GetValue(i);
 
     public long GetBytes(int i, long fieldOffset, byte[]? buffer, int bufferOffset, int length) => throw new NotSupportedException();
 
-    public char GetChar(int i) => throw new NotSupportedException();
+    public char GetChar(int i) => (char)GetValue(i);
 
     public long GetChars(int i, long fieldOffset, char[]? buffer, int bufferOffset, int length) => throw new NotSupportedException();
 
-    public DateTime GetDateTime(int i) => throw new NotSupportedException();
+    public DateTime GetDateTime(int i) => (DateTime)GetValue(i);
 
-    public decimal GetDecimal(int i) => throw new NotSupportedException();
+    public decimal GetDecimal(int i) => (decimal)GetValue(i);
 
-    public double GetDouble(int i) => throw new NotSupportedException();
+    public double GetDouble(int i) => (double)GetValue(i);
 
-    public float GetFloat(int i) => throw new NotSupportedException();
+    public float GetFloat(int i) => (float)GetValue(i);
 
-    public Guid GetGuid(int i) => throw new NotSupportedException();
+    public Guid GetGuid(int i) => (Guid)GetValue(i);
 
-    public short GetInt16(int i) => throw new NotSupportedException();
+    public short GetInt16(int i) => (short)GetValue(i);
 
-    public int GetInt32(int i) => throw new NotSupportedException();
+    public int GetInt32(int i) => (int)GetValue(i);
 
-    public long GetInt64(int i) => throw new NotSupportedException();
+    public long GetInt64(int i) => (long)GetValue(i);
 
-    public string GetString(int i) => throw new NotSupportedException();
+    public string GetString(int i) => (string)GetValue(i);
 }
