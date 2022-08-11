@@ -1,36 +1,31 @@
 namespace SqlBulkLoader;
 
 using System.Collections.Concurrent;
-
-using Microsoft.Data.SqlClient;
+using System.Data;
 
 using Smart.Linq;
 using Smart.Reflection;
 
-public sealed class SqlBulkLoader : IBulkLoader
+public class SqlBulkLoader<TFactory>
+        : IBulkLoader
+    where TFactory : Providers.Interfaces.IBulkCopyFactory, new()
 {
     private readonly ConcurrentDictionary<Type, Func<object?, object?>[]> accessorCache = new();
 
     private readonly SqlBulkLoaderConfig config;
+    private readonly Providers.Interfaces.IBulkCopyFactory factory;
 
     public SqlBulkLoader(SqlBulkLoaderConfig config)
     {
         this.config = config;
+        factory = new TFactory();
     }
 
     public async ValueTask LoadAsync<T>(string table, IEnumerable<T> source)
     {
         var accessors = accessorCache.GetOrAdd(typeof(T), CreateAccessors);
         using var reader = new BulkDataReader<T>(source, accessors);
-#pragma warning disable CA2007
-        await using var con = new SqlConnection(config.ConnectionString);
-#pragma warning restore CA2007
-        await con.OpenAsync().ConfigureAwait(false);
-
-        using var loader = new SqlBulkCopy(con)
-        {
-            DestinationTableName = table
-        };
+        await using var loader = await factory.Create(config, table);
         await loader.WriteToServerAsync(reader).ConfigureAwait(false);
     }
 
